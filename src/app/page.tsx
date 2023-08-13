@@ -1,9 +1,13 @@
+import { Picker } from '../components/Picker'
+import { RoundCountdown } from '../components/RoundCountdown'
+
 const Home = () => {
-	return (
-		<main className="min-h-screen flex items-center justify-center">
-			<h1 className="text-6xl">Nothing to see here... yet</h1>
-		</main>
-	)
+  return (
+    <>
+      <RoundCountdown />
+      <Picker />
+    </>
+  )
 }
 
 export default Home
