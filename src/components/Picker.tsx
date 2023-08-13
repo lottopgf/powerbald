@@ -270,11 +270,11 @@ function Winners({ round }: { round: bigint }) {
               ></div>
             ))}
       </div>
-      <div className="py-2 border-b font-semibold">Your picks</div>
-      <ul className="space-y-4">
-        {!tickets?.length
-          ? 'No tickets yet…'
-          : tickets.map((ticket, i) => (
+      {!!tickets?.length && (
+        <>
+          <div className="py-2 border-b font-semibold">Your picks</div>
+          <ul className="space-y-4">
+            {tickets.map((ticket, i) => (
               <li key={i} className="flex justify-center gap-2 items-center">
                 <span className="font-black text-2xl mr-4">{i + 1}.</span>
                 {ticket.map((number, i) => (
@@ -287,19 +287,21 @@ function Winners({ round }: { round: bigint }) {
                 ))}
               </li>
             ))}
-      </ul>
-      {winnerIndex !== undefined && winnerIndex > -1 && (
-        <div className="text-center ">
-          <div className="space-y-4">
-            <span className="text-4xl font-black animate-text bg-gradient-to-r from-teal-500 via-purple-500 to-orange-500 bg-clip-text text-transparent">
-              YOU WON!!!
-            </span>
+          </ul>
+          {winnerIndex !== undefined && winnerIndex > -1 && (
+            <div className="text-center ">
+              <div className="space-y-4">
+                <span className="text-4xl font-black animate-text bg-gradient-to-r from-teal-500 via-purple-500 to-orange-500 bg-clip-text text-transparent">
+                  YOU WON!!!
+                </span>
 
-            <ClaimButton round={round} index={winnerIndex} />
-          </div>
+                <ClaimButton round={round} index={winnerIndex} />
+              </div>
 
-          <ReactConfetti className="fixed inset-0 z-30" width={width} height={height} numberOfPieces={200} />
-        </div>
+              <ReactConfetti className="fixed inset-0 z-30" width={width} height={height} numberOfPieces={200} />
+            </div>
+          )}
+        </>
       )}
     </div>
   )
@@ -368,7 +370,7 @@ export function Picker() {
           </ul>
         </AccordionContent>
       </AccordionItem>
-      <AccordionItem value="tickets">
+      <AccordionItem value="results">
         <AccordionTrigger>Results of round {prevRound.toString()}</AccordionTrigger>
         <AccordionContent>
           <Winners round={prevRound} />
