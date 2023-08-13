@@ -1,10 +1,11 @@
 'use client'
 
+import { useMemo } from 'react'
 import { formatEther } from 'viem'
 import { POWERBALD_ABI } from '@/lib/abi'
 import { CONTRACT_ADDRESS } from '@/lib/consts'
 import { Countdown } from '@/components/Countdown'
-import { useBalance, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi'
+import { useBalance, useBlockNumber, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi'
 
 export function RoundCountdown() {
   const { data: currentRound } = useContractRead({
@@ -29,8 +30,12 @@ export function RoundCountdown() {
     address: CONTRACT_ADDRESS,
   })
 
-  const currentTimeStamp = BigInt(Date.now())
+  const { data: blockNumber } = useBlockNumber({ watch: true })
+
+  const currentTimeStamp = useMemo(() => BigInt(Date.now()), [blockNumber])
   const endTimeStamp = !!start && !!duration ? (start + duration) * 1000n : undefined
+
+  console.log(currentTimeStamp, blockNumber)
 
   const isOver = !!endTimeStamp && currentTimeStamp > endTimeStamp!
 

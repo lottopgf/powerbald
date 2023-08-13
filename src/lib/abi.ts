@@ -147,6 +147,23 @@ export const POWERBALD_ABI = [
   },
   {
     type: 'function',
+    name: 'game_claimooor',
+    inputs: [
+      {
+        name: 'game_num',
+        type: 'uint256',
+      },
+    ],
+    outputs: [
+      {
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     name: 'entry_price',
     inputs: [],
     outputs: [
@@ -215,16 +232,12 @@ export const POWERBALD_ABI = [
     name: 'claim',
     inputs: [
       {
-        name: 'game_num',
-        type: 'uint256',
-      },
-      {
         name: 'entry_num',
         type: 'uint256',
       },
     ],
     outputs: [],
-    stateMutability: 'nonpayable',
+    stateMutability: 'payable',
   },
   {
     type: 'function',

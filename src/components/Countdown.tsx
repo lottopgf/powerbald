@@ -5,6 +5,10 @@ import { useCountdown } from '@/lib/useCountdown'
 export function Countdown({ target }: { target: Date | number }) {
   const [days, hours, minutes, seconds] = useCountdown(target)
 
+  if (new Date(target).getTime() < Date.now()) {
+    return <span className="tabular-nums">00:00:00</span>
+  }
+
   return (
     <span className="tabular-nums">
       {days ? `${days}:` : null}

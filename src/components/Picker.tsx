@@ -213,12 +213,13 @@ function useTickets(round: bigint | undefined, winningNumbers?: number[]) {
   }
 }
 
-function ClaimButton({ round, index }: { round: bigint; index: number }) {
+function ClaimButton({ index }: { index: number }) {
   const { config } = usePrepareContractWrite({
     abi: POWERBALD_ABI,
     address: CONTRACT_ADDRESS,
     functionName: 'claim',
-    args: [round, BigInt(index)],
+    args: [BigInt(index)],
+    value: 0n,
   })
 
   const { writeAsync: claim, data, isLoading: isWriting } = useContractWrite(config)
@@ -295,7 +296,7 @@ function Winners({ round }: { round: bigint }) {
                   YOU WON!!!
                 </span>
 
-                <ClaimButton round={round} index={winnerIndex} />
+                <ClaimButton index={winnerIndex} />
               </div>
 
               <ReactConfetti className="fixed inset-0 z-30" width={width} height={height} numberOfPieces={200} />
