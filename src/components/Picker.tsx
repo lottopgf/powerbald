@@ -224,6 +224,9 @@ function ClaimButton({ index }: { index: number }) {
 
   const { writeAsync: claim, data, isLoading: isWriting } = useContractWrite(config)
   const { isLoading } = useWaitForTransaction({ hash: data?.hash, onSuccess: () => toast.success('Prize claimed!') })
+  if (!claim) {
+    return <div>But someone has claimed already :(</div>
+  }
   return (
     <button
       disabled={!claim || isWriting || isLoading}
@@ -252,8 +255,8 @@ function Winners({ round }: { round: bigint }) {
   winnerIndex !== undefined && console.log('Winner:', tickets?.[winnerIndex])
 
   return (
-    <div className="border rounded-sm p-4 space-y-4">
-      <div className="py-4 text-center text-2xl font-bold">And the winner is…</div>
+    <div className="border rounded-sm p-4 space-y-2">
+      <div className="text-center text-lg font-semibold">Round {round.toString()} winning numbers</div>
       <div className="flex gap-2 justify-center items-center">
         {winningNumbers
           ? winningNumbers.map((number, i) => (
@@ -342,7 +345,7 @@ export function Picker() {
   }
 
   return (
-    <Accordion type="multiple" className="w-full" defaultValue={['buy', 'tickets']}>
+    <Accordion type="multiple" className="w-full" defaultValue={['buy', 'tickets', 'results']}>
       <AccordionItem value="buy">
         <AccordionTrigger>Buy a ticket</AccordionTrigger>
         <AccordionContent>

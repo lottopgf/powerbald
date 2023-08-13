@@ -12,14 +12,23 @@ import {
   useContractRead,
   useContractWrite,
   usePrepareContractWrite,
+  useQueryClient,
   useWaitForTransaction,
 } from 'wagmi'
 
 export function RoundCountdown() {
-  const { data: currentRound, refetch } = useContractRead({
+  const client = useQueryClient()
+  const { data: currentRound } = useContractRead({
     address: CONTRACT_ADDRESS,
     abi: POWERBALD_ABI,
     functionName: 'games_count',
+  })
+  const { data: entriesCount } = useContractRead({
+    address: CONTRACT_ADDRESS,
+    abi: POWERBALD_ABI,
+    args: [currentRound!],
+    functionName: 'entries_count',
+    enabled: currentRound !== undefined,
   })
   const { data: duration } = useContractRead({
     address: CONTRACT_ADDRESS,
@@ -59,13 +68,15 @@ export function RoundCountdown() {
     hash: data?.hash,
     onSettled() {
       toast.success('Winner has been drawn 🎉', { position: 'bottom-center' })
-      refetch()
+      client.invalidateQueries()
     },
   })
 
   return (
     <>
-      <div className="text-center font-semibold text-lg">Round {currentRound?.toString()}</div>
+      <div className="text-center font-semibold text-lg">
+        Round {currentRound?.toString()} – {entriesCount !== undefined && `${entriesCount.toString()} entries`}
+      </div>
       <div className="text-center grid gap-2 grid-cols-2">
         <div className="flex flex-col">
           <div className="font-semibold rounded-md border">Next Drawing</div>
