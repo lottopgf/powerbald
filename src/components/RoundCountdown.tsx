@@ -20,6 +20,7 @@ export function RoundCountdown() {
     address: CONTRACT_ADDRESS,
     abi: POWERBALD_ABI,
     functionName: 'games_count',
+    watch: true,
   })
   const { data: entriesCount } = useContractRead({
     address: CONTRACT_ADDRESS,

@@ -54,6 +54,7 @@ function NewTicket() {
     address: CONTRACT_ADDRESS,
     abi: POWERBALD_ABI,
     functionName: 'games_count',
+    watch: true,
   })
 
   const { userTickets: tickets, refetch } = useTickets(currentRound)
@@ -104,7 +105,7 @@ function NewTicket() {
     await enter()
 
     form.reset()
-    toast.success('Ticket purchased!', { position: 'bottom-center' })
+    toast.success('Transaction submitted', { position: 'bottom-center' })
     setIsQuickPick(false)
   }
 
@@ -318,6 +319,7 @@ export function Picker() {
     address: CONTRACT_ADDRESS,
     abi: POWERBALD_ABI,
     functionName: 'games_count',
+    watch: true,
   })
 
   const currentRound = currentRoundRaw ?? 1n
