@@ -41,6 +41,7 @@ export function RoundCountdown() {
     functionName: 'game_finalised',
     args: [(currentRound ?? 1n) - 1n],
     enabled: currentRound !== undefined,
+    watch: true,
   })
 
   const { data: balance } = useBalance({
