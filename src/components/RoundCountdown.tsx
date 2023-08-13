@@ -29,8 +29,6 @@ export function RoundCountdown() {
     address: CONTRACT_ADDRESS,
   })
 
-  console.log({ currentRound, prevRound: (currentRound ?? 1n) - 1n, duration, start })
-
   const currentTimeStamp = BigInt(Date.now())
   const endTimeStamp = !!start && !!duration ? (start + duration) * 1000n : undefined
 

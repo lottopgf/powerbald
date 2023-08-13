@@ -224,7 +224,7 @@ export const POWERBALD_ABI = [
       },
     ],
     outputs: [],
-    stateMutability: 'view',
+    stateMutability: 'nonpayable',
   },
   {
     type: 'function',

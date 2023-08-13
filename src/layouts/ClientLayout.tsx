@@ -11,7 +11,7 @@ import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import { ConnectKitProvider, getDefaultConfig } from 'connectkit'
 import { WagmiConfig, configureChains, createConfig } from 'wagmi'
 
-const { chains, publicClient } = configureChains(
+const { chains, publicClient, webSocketPublicClient } = configureChains(
   [arbitrum],
   [
     jsonRpcProvider({
@@ -36,8 +36,8 @@ const config = createConfig(
     chains,
     publicClient,
     appName: APP_NAME,
-    infuraId: process.env.NEXT_PUBLIC_INFURA_ID,
     walletConnectProjectId: process.env.NEXT_PUBLIC_WC_ID!,
+    webSocketPublicClient,
   })
 )
 

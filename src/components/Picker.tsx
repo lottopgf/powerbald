@@ -56,7 +56,7 @@ function NewTicket() {
     functionName: 'games_count',
   })
 
-  const tickets = useTickets(currentRound)
+  const { userTickets: tickets, refetch } = useTickets(currentRound)
 
   const form = useForm({
     defaultValues: {
@@ -88,6 +88,7 @@ function NewTicket() {
     hash: data?.hash,
     onSuccess() {
       toast.success('Ticket purchased 🎉', { position: 'bottom-center' })
+      refetch()
     },
   })
 
@@ -166,10 +167,10 @@ function NewTicket() {
   )
 }
 
-function useTickets(round: bigint | undefined) {
+function useTickets(round: bigint | undefined, winningNumbers?: number[]) {
   const { address } = useAccount()
 
-  const { data: entriesCount } = useContractRead({
+  const { data: entriesCount, refetch: refetchEntriesCount } = useContractRead({
     address: CONTRACT_ADDRESS,
     abi: POWERBALD_ABI,
     functionName: 'entries_count',
@@ -184,37 +185,70 @@ function useTickets(round: bigint | undefined) {
     args: [round!, i],
   }))
 
-  const { data: entriesRaw } = useContractReads({
+  const { data: entriesRaw, refetch: refetchEntries } = useContractReads({
     contracts,
     enabled: round !== undefined && !!entriesCount,
   })
 
   const entries: { participant: Address; picks: Address }[] | undefined = entriesRaw?.map(entry => entry.result as any)
 
-  return entries?.filter(entry => entry.participant === address).map(entry => Array.from(fromHex(entry.picks, 'bytes')))
+  const allTickets = entries?.map(entry => Array.from(fromHex(entry.picks, 'bytes')))
+
+  const userTickets = entries
+    ?.filter(entry => entry.participant === address)
+    .map(entry => Array.from(fromHex(entry.picks, 'bytes')))
+
+  const winnerIndex = allTickets?.findIndex(ticket => {
+    return ticket.every(pick => winningNumbers?.includes(pick))
+  })
+
+  return {
+    allTickets,
+    userTickets,
+    winnerIndex: winnerIndex === undefined || winnerIndex === -1 ? undefined : winnerIndex,
+    async refetch() {
+      await refetchEntriesCount()
+      await refetchEntries()
+    },
+  }
 }
 
-function Winners() {
-  const { width, height } = useWindowSize()
-
-  const { data: currentRound } = useContractRead({
-    address: CONTRACT_ADDRESS,
+function ClaimButton({ round, index }: { round: bigint; index: number }) {
+  const { config } = usePrepareContractWrite({
     abi: POWERBALD_ABI,
-    functionName: 'games_count',
+    address: CONTRACT_ADDRESS,
+    functionName: 'claim',
+    args: [round, BigInt(index)],
   })
+
+  const { writeAsync: claim, data, isLoading: isWriting } = useContractWrite(config)
+  const { isLoading } = useWaitForTransaction({ hash: data?.hash, onSuccess: () => toast.success('Prize claimed!') })
+  return (
+    <button
+      disabled={!claim || isWriting || isLoading}
+      onClick={claim}
+      className="p-4 bg-green-600 w-full rounded-lg text-4xl font-black"
+    >
+      {isWriting || isLoading ? 'Claiming…' : 'Claim Prize'}
+    </button>
+  )
+}
+
+function Winners({ round }: { round: bigint }) {
+  const { width, height } = useWindowSize()
 
   const { data: winnerData } = useContractRead({
     address: CONTRACT_ADDRESS,
     abi: POWERBALD_ABI,
     functionName: 'compute_winning_balls',
-    args: [(currentRound ?? 1n) - 1n],
+    args: [round],
   })
 
   const winningNumbers = winnerData ? Array.from(fromHex(winnerData, 'bytes')).sort() : undefined
 
-  const tickets = useTickets((currentRound ?? 1n) - 1n)
+  const { userTickets: tickets, winnerIndex } = useTickets(round, winningNumbers)
 
-  const isWinner = !!winningNumbers && tickets?.some(ticket => ticket.every(number => winningNumbers.includes(number)))
+  winnerIndex !== undefined && console.log('Winner:', tickets?.[winnerIndex])
 
   return (
     <div className="border rounded-sm p-4 space-y-4">
@@ -254,14 +288,14 @@ function Winners() {
               </li>
             ))}
       </ul>
-      {isWinner && (
+      {winnerIndex !== undefined && winnerIndex > -1 && (
         <div className="text-center ">
           <div className="space-y-4">
             <span className="text-4xl font-black animate-text bg-gradient-to-r from-teal-500 via-purple-500 to-orange-500 bg-clip-text text-transparent">
               YOU WON!!!
             </span>
 
-            <button className="p-4 bg-green-600 w-full rounded-lg text-4xl font-black">Claim Prize</button>
+            <ClaimButton round={round} index={winnerIndex} />
           </div>
 
           <ReactConfetti className="fixed inset-0 z-30" width={width} height={height} numberOfPieces={200} />
@@ -274,13 +308,16 @@ function Winners() {
 export function Picker() {
   const { isConnected, isConnecting } = useAccount()
 
-  const { data: currentRound } = useContractRead({
+  const { data: currentRoundRaw } = useContractRead({
     address: CONTRACT_ADDRESS,
     abi: POWERBALD_ABI,
     functionName: 'games_count',
   })
 
-  const tickets = useTickets(currentRound)
+  const currentRound = currentRoundRaw ?? 1n
+  const prevRound = currentRound - 1n
+
+  const { userTickets: tickets } = useTickets(currentRound)
 
   if (isConnecting) {
     return (
@@ -332,9 +369,9 @@ export function Picker() {
         </AccordionContent>
       </AccordionItem>
       <AccordionItem value="tickets">
-        <AccordionTrigger>Winners</AccordionTrigger>
+        <AccordionTrigger>Results of round {prevRound.toString()}</AccordionTrigger>
         <AccordionContent>
-          <Winners />
+          <Winners round={prevRound} />
         </AccordionContent>
       </AccordionItem>
     </Accordion>
