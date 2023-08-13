@@ -12,12 +12,10 @@ import {
   useContractRead,
   useContractWrite,
   usePrepareContractWrite,
-  useQueryClient,
   useWaitForTransaction,
 } from 'wagmi'
 
 export function RoundCountdown() {
-  const client = useQueryClient()
   const { data: currentRound } = useContractRead({
     address: CONTRACT_ADDRESS,
     abi: POWERBALD_ABI,
@@ -29,6 +27,7 @@ export function RoundCountdown() {
     args: [currentRound!],
     functionName: 'entries_count',
     enabled: currentRound !== undefined,
+    watch: true,
   })
   const { data: duration } = useContractRead({
     address: CONTRACT_ADDRESS,
@@ -66,11 +65,15 @@ export function RoundCountdown() {
 
   useWaitForTransaction({
     hash: data?.hash,
-    onSettled() {
+    onSuccess() {
       toast.success('Winner has been drawn 🎉', { position: 'bottom-center' })
-      client.invalidateQueries()
     },
   })
+
+  console.log(balance?.value)
+
+  const balanceIsPositive = !!balance && balance.value > 0n
+  const balanceIsBelowDisplay = !!balance && balance.value < 10_000_000_000_000_000n
 
   return (
     <>
@@ -82,11 +85,9 @@ export function RoundCountdown() {
           <div className="font-semibold rounded-md border">Next Drawing</div>
           <div className="text-3xl font-semibold m-auto py-4">
             {isOver ? (
-              <>
-                <button className="px-2 py-1 bg-green-600 w-full rounded-lg text-lg" disabled={!draw} onClick={draw}>
-                  DRAW
-                </button>
-              </>
+              <button className="px-2 py-1 bg-green-600 w-full rounded-lg text-lg" disabled={!draw} onClick={draw}>
+                Draw Numbers
+              </button>
             ) : endTimeStamp ? (
               <Countdown target={new Date(parseInt(endTimeStamp.toString()))} />
             ) : (
@@ -98,8 +99,14 @@ export function RoundCountdown() {
           <div className="font-semibold rounded-md border">Estimated Jackpot</div>
           <div className="m-auto py-4">
             <div className="">
-              <span className="text-4xl font-black animate-text bg-gradient-to-r from-teal-500 via-purple-500 to-orange-500 bg-clip-text text-transparent">
-                {balance?.value ? parseFloat(formatEther(balance.value)).toFixed(2) : 0}
+              <span
+                className="text-4xl font-black animate-text bg-gradient-to-r from-teal-500 via-purple-500 to-orange-500 bg-clip-text text-transparent"
+                title={balance ? formatEther(balance.value) : ''}
+              >
+                {balanceIsPositive
+                  ? (balanceIsBelowDisplay ? '<' : '') +
+                    parseFloat(formatEther(balance.value)).toLocaleString('en-US', { maximumFractionDigits: 3 })
+                  : 0}
               </span>{' '}
               <span className="self-end text-sm font-semibold">ETH</span>
             </div>

@@ -86,7 +86,7 @@ function NewTicket() {
 
   const { isLoading } = useWaitForTransaction({
     hash: data?.hash,
-    onSettled() {
+    onSuccess() {
       toast.success('Ticket purchased 🎉', { position: 'bottom-center' })
       refetch()
     },
@@ -131,7 +131,13 @@ function NewTicket() {
     <form onSubmit={form.handleSubmit(onSubmit)}>
       <fieldset disabled={isLoading || form.formState.isSubmitting} className="space-y-4">
         <div className="grid grid-cols-10 gap-2 rounded-lg">
-          <div className="col-span-4 text-center self-center font-bold">PICK {PICK_COUNT} or QP</div>
+          <div className="col-span-4 self-center font-bold">PICK {PICK_COUNT} or QP</div>
+          <div />
+          <div />
+          <Button onClick={() => quickPick()} isActive={isQuickPick} value={undefined}>
+            {isQuickPick ? <span className="text-2xl leading-none">×</span> : null}
+          </Button>
+          <div className="col-span-3 self-center font-bold">QUICK PICK</div>
           {Array.from({ length: MAX_NUMBER }).map((_, i) => (
             <Button
               key={i}
@@ -143,12 +149,6 @@ function NewTicket() {
               {i + 1}
             </Button>
           ))}
-          <div />
-          <div />
-          <Button onClick={() => quickPick()} isActive={isQuickPick} value={undefined}>
-            {isQuickPick ? <span className="text-2xl leading-none">×</span> : null}
-          </Button>
-          <div className="col-span-3 self-center text-center font-bold">QUICK PICK</div>
         </div>
         {alreadyPicked && (
           <div className="border-2 rounded-md border-red-500 p-2">
