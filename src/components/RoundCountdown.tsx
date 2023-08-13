@@ -73,7 +73,7 @@ export function RoundCountdown() {
   console.log(balance?.value)
 
   const balanceIsPositive = !!balance && balance.value > 0n
-  const balanceIsBelowDisplay = !!balance && balance.value < 10_000_000_000_000_000n
+  const balanceIsBelowDisplay = !!balance && balance.value < 1_000_000_000_000_000n
 
   return (
     <>
@@ -104,7 +104,7 @@ export function RoundCountdown() {
                 title={balance ? formatEther(balance.value) : ''}
               >
                 {balanceIsPositive
-                  ? (balanceIsBelowDisplay ? '<' : '') +
+                  ? (balanceIsBelowDisplay ? '<' : '~') +
                     parseFloat(formatEther(balance.value)).toLocaleString('en-US', { maximumFractionDigits: 3 })
                   : 0}
               </span>{' '}
