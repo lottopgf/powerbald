@@ -2,13 +2,21 @@
 
 import { useMemo } from 'react'
 import { formatEther } from 'viem'
+import { toast } from 'react-hot-toast'
 import { POWERBALD_ABI } from '@/lib/abi'
 import { CONTRACT_ADDRESS } from '@/lib/consts'
 import { Countdown } from '@/components/Countdown'
-import { useBalance, useBlockNumber, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi'
+import {
+  useBalance,
+  useBlockNumber,
+  useContractRead,
+  useContractWrite,
+  usePrepareContractWrite,
+  useWaitForTransaction,
+} from 'wagmi'
 
 export function RoundCountdown() {
-  const { data: currentRound } = useContractRead({
+  const { data: currentRound, refetch } = useContractRead({
     address: CONTRACT_ADDRESS,
     abi: POWERBALD_ABI,
     functionName: 'games_count',
@@ -35,8 +43,6 @@ export function RoundCountdown() {
   const currentTimeStamp = useMemo(() => BigInt(Date.now()), [blockNumber])
   const endTimeStamp = !!start && !!duration ? (start + duration) * 1000n : undefined
 
-  console.log(currentTimeStamp, blockNumber)
-
   const isOver = !!endTimeStamp && currentTimeStamp > endTimeStamp!
 
   const { config } = usePrepareContractWrite({
@@ -47,7 +53,15 @@ export function RoundCountdown() {
     value: 0n,
   })
 
-  const { write: draw } = useContractWrite(config)
+  const { data, write: draw } = useContractWrite(config)
+
+  useWaitForTransaction({
+    hash: data?.hash,
+    onSettled() {
+      toast.success('Winner has been drawn 🎉', { position: 'bottom-center' })
+      refetch()
+    },
+  })
 
   return (
     <>

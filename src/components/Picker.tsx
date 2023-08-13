@@ -86,7 +86,7 @@ function NewTicket() {
 
   const { isLoading } = useWaitForTransaction({
     hash: data?.hash,
-    onSuccess() {
+    onSettled() {
       toast.success('Ticket purchased 🎉', { position: 'bottom-center' })
       refetch()
     },
